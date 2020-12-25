@@ -1,12 +1,6 @@
 # linux-lab-7
 ## Практика по Software distribution
-
-### Цель:
-
-1) Создать свой RPM пакет (можно взять свое приложение, либо собрать, например, nginx с определенными опциями);
-2) Создать свой репозиторий и разместить там ранее собранный RPM.
-
-Установим все необходимое
+##### Установим все необходимое
 ```
 root@roman-VirtualBox:~# yum-builddep rpmbuild/SPECS/nginx.spec
 root@roman-VirtualBox:~# wget https://nginx.org/packages/centos/7/SRPMS/nginx-1.18.0-2.el7.ngx.src.rpm
@@ -19,7 +13,7 @@ anaconda-ks.cfg  latest.tar.gz  openssl-1.1.1i  original-ks.cfg  rpmbuild
 root@roman-VirtualBox:~# pwd
 /root
 ```
-Правим файл nginx.spec
+##### Правим файл nginx.spec
 ```
 root@roman-VirtualBox:~# nano rpmbuild/SPECS/nginx.spec
 ...
@@ -30,7 +24,7 @@ root@roman-VirtualBox:~# nano rpmbuild/SPECS/nginx.spec
     --with-openssl=/root/openssl-1.1.1i \
     --with-debug
 ```
-Устанавливаем gcc для сборки, запускаем саму сборку и смотрим, что пакеты создались после сборки
+##### Устанавливаем gcc для сборки, запускаем саму сборку и смотрим, что пакеты создались после сборки
 ```
 root@roman-VirtualBox:~# yum install gcc
 root@roman-VirtualBox:~# rpmbuild -bb rpmbuild/SPECS/nginx.spec
@@ -41,7 +35,7 @@ drwxr-xr-x. 3 root root      20 Dec 14 16:18 ..
 -rw-r--r--. 1 root root 2222324 Dec 14 16:18 nginx-1.18.0-2.el8.ngx.x86_64.rpm
 -rw-r--r--. 1 root root 2467084 Dec 14 16:18 nginx-debuginfo-1.18.0-2.el8.ngx.x86_64.rpm
 ```
-Устанавливаем наш пакет и проверяем, что nginx работает
+##### Устанавливаем наш пакет и проверяем, что nginx работает
 ```
 root@roman-VirtualBox:~# yum localinstall -y rpmbuild/RPMS/x86_64/nginx-1.18.0-2.el8.ngx.x86_64.rpm
 root@roman-VirtualBox:~# systemctl start nginx
@@ -62,13 +56,13 @@ Dec 14 16:25:12 localhost.localdomain systemd[1]: Starting nginx - high performa
 Dec 14 16:25:12 localhost.localdomain systemd[1]: nginx.service: Can't open PID file /var/run/nginx.pid (yet?) after start: No such file or>
 Dec 14 16:25:12 localhost.localdomain systemd[1]: Started nginx - high performance web server.
 ```
-Создадим каталог repo в директории nginx и скопируем туда наш собранный RPM и RPM для установки репозитория
+##### Создадим каталог repo в директории nginx и скопируем туда наш собранный RPM и RPM для установки репозитория
 ```
 root@roman-VirtualBox:~# mkdir /usr/share/nginx/html/repo
 root@roman-VirtualBox:~# cp rpmbuild/RPMS/x86_64/nginx-1.18.0-2.el8.ngx.x86_64.rpm /usr/share/nginx/html/repo/
 root@roman-VirtualBox:~# wget https://repo.percona.com/centos/7Server/RPMS/noarch/percona-release-1.0-9.noarch.rpm -O /usr/share/nginx/html/repo/percona-release-1.0-9.noarch.rpm
 ```
-Инициализируем репозиторий
+##### Инициализируем репозиторий
 ```
 root@roman-VirtualBox:~# createrepo /usr/share/nginx/html/repo/
 Directory walk started
@@ -78,15 +72,14 @@ Preparing sqlite DBs
 Pool started (with 5 workers)
 Pool finished
 ```
-Добавлеям автоиндексирование в файле конфигурации nginx
-Проверим конфиг и перезапустим nginx
+##### Добавлеям автоиндексирование в файле конфигурации и перезапустим nginx
 ```
 root@roman-VirtualBox:~# nginx -t
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 root@roman-VirtualBox:~# nginx -s reload
 ```
-Проверим, что репозиторий создался
+##### Проверим, что репозиторий создался
 ```
 root@roman-VirtualBox:~# curl -a http://localhost/repo/
 <html>
@@ -99,7 +92,7 @@ root@roman-VirtualBox:~# curl -a http://localhost/repo/
 </pre><hr></body>
 </html>
 ```
-Добавляем репозиторий
+##### Добавляем репозиторий
 ```
 root@roman-VirtualBox:~# cat >> /etc/yum.repos.d/mai.repo << EOF
 > [mai]
@@ -109,13 +102,13 @@ root@roman-VirtualBox:~# cat >> /etc/yum.repos.d/mai.repo << EOF
 > enabled=1
 > EOF
 ```
-Убедимся, что репозиторий есть
+##### Убедимся, что репозиторий есть
 ```
 root@roman-VirtualBox:~# yum repolist enabled | grep mai
 Failed to set locale, defaulting to C.UTF-8
 mai                                mai-linux
 ```
-Переустановим nginx
+##### Переустановим nginx
 ```
 root@roman-VirtualBox:~# yum reinstall nginx
 Failed to set locale, defaulting to C.UTF-8
@@ -157,7 +150,7 @@ Reinstalled:
 
 Complete!
 ```
-Установим percona-release из нашего репозитория
+##### Установим percona-release из нашего репозитория
 ```
 root@roman-VirtualBox:~# yum install percona-release -y
 ...
